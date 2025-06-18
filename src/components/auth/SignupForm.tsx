@@ -1,72 +1,54 @@
 
 import React, { useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useAuth } from '@/context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 
-interface SignupFormProps {
-  onToggleMode: () => void;
-}
-
-const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
+const SignupForm = ({ onToggle }: { onToggle: () => void }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { signup } = useAuth();
+  const { signup, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    setIsSubmitting(true);
-
-    if (!name || !email || !password || !confirmPassword) {
-      setError('Please fill in all fields');
-      setIsSubmitting(false);
-      return;
-    }
-
+    
     if (password !== confirmPassword) {
       setError('Passwords do not match');
-      setIsSubmitting(false);
       return;
     }
-
+    
     if (password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      setIsSubmitting(false);
+      setError('Password must be at least 6 characters');
       return;
     }
-
-    const success = await signup(name, email, password);
-    if (!success) {
-      setError('Failed to create account. Please try again.');
+    
+    try {
+      await signup(name, email, password);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed');
     }
-    setIsSubmitting(false);
   };
 
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
-        <CardDescription className="text-center text-muted-foreground">
-          Set up your KYC management platform
-        </CardDescription>
+        <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
+        <CardDescription>Enter your information to create your account</CardDescription>
       </CardHeader>
-      <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-4">
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md text-sm">
+              {error}
+            </div>
           )}
           
           <div className="space-y-2">
@@ -74,7 +56,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder="Enter your full name"
               value={name}
               onChange={(e) => setName(e.target.value)}
               required
@@ -86,7 +68,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
             <Input
               id="email"
               type="email"
-              placeholder="john@example.com"
+              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -99,7 +81,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
               <Input
                 id="password"
                 type={showPassword ? 'text' : 'password'}
-                placeholder="Choose a secure password"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -111,11 +93,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
               >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <Eye className="h-4 w-4 text-muted-foreground" />
-                )}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -124,32 +102,26 @@ const SignupForm: React.FC<SignupFormProps> = ({ onToggleMode }) => {
             <Label htmlFor="confirmPassword">Confirm Password</Label>
             <Input
               id="confirmPassword"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
             />
           </div>
-        </CardContent>
-        
-        <CardFooter className="flex flex-col space-y-4">
-          <Button type="submit" className="w-full" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Account...' : 'Create Account'}
-          </Button>
           
-          <p className="text-sm text-center text-muted-foreground">
-            Already have an account?{' '}
-            <button
-              type="button"
-              onClick={onToggleMode}
-              className="font-medium text-primary hover:underline"
-            >
-              Sign in
-            </button>
-          </p>
-        </CardFooter>
-      </form>
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? 'Creating Account...' : 'Create Account'}
+          </Button>
+        </form>
+        
+        <div className="mt-4 text-center text-sm">
+          <span className="text-gray-600">Already have an account? </span>
+          <Button variant="link" className="p-0 h-auto" onClick={onToggle}>
+            Sign in
+          </Button>
+        </div>
+      </CardContent>
     </Card>
   );
 };
