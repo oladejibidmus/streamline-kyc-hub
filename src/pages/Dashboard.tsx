@@ -6,6 +6,9 @@ import DashboardHome from '@/components/dashboard/Dashboard';
 import ClientList from '@/components/clients/ClientList';
 import FormBuilder from '@/components/forms/FormBuilder';
 import ComplianceCenter from '@/components/compliance/ComplianceCenter';
+import ContractEditor from '@/components/contracts/ContractEditor';
+import PaymentMethods from '@/components/payments/PaymentMethods';
+import NotificationCenter from '@/components/notifications/NotificationCenter';
 import Settings from '@/components/settings/Settings';
 
 const Dashboard = () => {
@@ -37,6 +40,12 @@ const Dashboard = () => {
         return <FormBuilder />;
       case 'compliance':
         return <ComplianceCenter />;
+      case 'contracts':
+        return <ContractEditor />;
+      case 'payments':
+        return <PaymentMethods />;
+      case 'notifications':
+        return <NotificationCenter />;
       case 'settings':
         return <Settings />;
       case 'invite-client':
