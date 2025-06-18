@@ -80,14 +80,14 @@ const FormBuilder = () => {
   ]);
 
   const fieldTypes = [
-    { type: 'text', icon: Type, label: 'Text Input' },
-    { type: 'email', icon: Mail, label: 'Email' },
-    { type: 'phone', icon: Phone, label: 'Phone' },
-    { type: 'number', icon: Hash, label: 'Number' },
-    { type: 'textarea', icon: FileText, label: 'Long Text' },
-    { type: 'select', icon: MousePointer, label: 'Dropdown' },
-    { type: 'checkbox', icon: CheckSquare, label: 'Checkbox' },
-    { type: 'date', icon: Calendar, label: 'Date' }
+    { type: 'text' as const, icon: Type, label: 'Text Input' },
+    { type: 'email' as const, icon: Mail, label: 'Email' },
+    { type: 'phone' as const, icon: Phone, label: 'Phone' },
+    { type: 'number' as const, icon: Hash, label: 'Number' },
+    { type: 'textarea' as const, icon: FileText, label: 'Long Text' },
+    { type: 'select' as const, icon: MousePointer, label: 'Dropdown' },
+    { type: 'checkbox' as const, icon: CheckSquare, label: 'Checkbox' },
+    { type: 'date' as const, icon: Calendar, label: 'Date' }
   ];
 
   const addField = (type: FormField['type']) => {
