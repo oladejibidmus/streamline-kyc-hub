@@ -15,9 +15,9 @@ const Auth = () => {
         </div>
         
         {isLogin ? (
-          <LoginForm onToggleMode={() => setIsLogin(false)} />
+          <LoginForm onToggle={() => setIsLogin(false)} />
         ) : (
-          <SignupForm onToggleMode={() => setIsLogin(true)} />
+          <SignupForm onToggle={() => setIsLogin(true)} />
         )}
         
         <div className="mt-8 text-center text-sm text-slate-500">
