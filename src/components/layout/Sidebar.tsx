@@ -9,7 +9,8 @@ import {
   Shield, 
   Settings, 
   PlusCircle,
-  LogOut
+  LogOut,
+  FileContract
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -25,6 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeSection, onSectionChange }) => 
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'clients', label: 'Clients', icon: Users },
     { id: 'forms', label: 'Form Builder', icon: FileText },
+    { id: 'contracts', label: 'Contracts', icon: FileContract },
     { id: 'compliance', label: 'Risk & Compliance', icon: Shield },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
