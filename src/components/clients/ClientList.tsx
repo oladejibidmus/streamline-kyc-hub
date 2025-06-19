@@ -7,7 +7,11 @@ import ClientCard from './ClientCard';
 import ClientSearch from './ClientSearch';
 import EmptyClientState from './EmptyClientState';
 
-const ClientList = () => {
+interface ClientListProps {
+  onInviteClient?: () => void;
+}
+
+const ClientList = ({ onInviteClient }: ClientListProps) => {
   const [searchTerm, setSearchTerm] = useState('');
   
   // Mock data - replace with actual data fetching
@@ -64,6 +68,12 @@ const ClientList = () => {
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const handleInviteClient = () => {
+    if (onInviteClient) {
+      onInviteClient();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -71,7 +81,7 @@ const ClientList = () => {
           <h1 className="text-3xl font-bold text-slate-900">Clients</h1>
           <p className="text-slate-600 mt-2">Manage your client onboarding pipeline</p>
         </div>
-        <Button>
+        <Button onClick={handleInviteClient}>
           <MessageSquare className="h-4 w-4 mr-2" />
           Invite Client
         </Button>
@@ -86,7 +96,7 @@ const ClientList = () => {
       </div>
 
       {filteredClients.length === 0 && (
-        <EmptyClientState hasSearchTerm={!!searchTerm} />
+        <EmptyClientState hasSearchTerm={!!searchTerm} onInviteClient={handleInviteClient} />
       )}
     </div>
   );

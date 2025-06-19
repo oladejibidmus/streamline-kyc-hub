@@ -6,9 +6,10 @@ import { Users, MessageSquare } from 'lucide-react';
 
 interface EmptyClientStateProps {
   hasSearchTerm: boolean;
+  onInviteClient: () => void;
 }
 
-const EmptyClientState = ({ hasSearchTerm }: EmptyClientStateProps) => {
+const EmptyClientState = ({ hasSearchTerm, onInviteClient }: EmptyClientStateProps) => {
   return (
     <Card>
       <CardContent className="pt-6">
@@ -19,7 +20,7 @@ const EmptyClientState = ({ hasSearchTerm }: EmptyClientStateProps) => {
             {hasSearchTerm ? 'Try adjusting your search terms.' : 'Get started by inviting your first client.'}
           </p>
           {!hasSearchTerm && (
-            <Button>
+            <Button onClick={onInviteClient}>
               <MessageSquare className="h-4 w-4 mr-2" />
               Invite Client
             </Button>

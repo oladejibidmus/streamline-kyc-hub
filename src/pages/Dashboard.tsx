@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import Sidebar from '@/components/layout/Sidebar';
 import DashboardHome from '@/components/dashboard/Dashboard';
 import ClientList from '@/components/clients/ClientList';
+import ClientInvitationForm from '@/components/clients/ClientInvitationForm';
 import FormBuilder from '@/components/forms/FormBuilder';
 import ComplianceCenter from '@/components/compliance/ComplianceCenter';
 import ContractEditor from '@/components/contracts/ContractEditor';
@@ -30,12 +31,16 @@ const Dashboard = () => {
     return null; // Will be redirected by App component
   }
 
+  const handleInviteClient = () => {
+    setActiveSection('invite-client');
+  };
+
   const renderContent = () => {
     switch (activeSection) {
       case 'dashboard':
         return <DashboardHome />;
       case 'clients':
-        return <ClientList />;
+        return <ClientList onInviteClient={handleInviteClient} />;
       case 'forms':
         return <FormBuilder />;
       case 'compliance':
@@ -55,14 +60,7 @@ const Dashboard = () => {
               <h1 className="text-3xl font-bold text-slate-900">Invite Client</h1>
               <p className="text-slate-600 mt-2">Send onboarding invitation to a new client</p>
             </div>
-            <div className="max-w-2xl">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
-                <h3 className="font-medium text-blue-900 mb-2">Coming Soon</h3>
-                <p className="text-blue-700">
-                  Client invitation feature is under development. This will allow you to send branded onboarding links to clients with custom forms and KYC requirements.
-                </p>
-              </div>
-            </div>
+            <ClientInvitationForm />
           </div>
         );
       default:
