@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,8 +15,12 @@ import {
   Users,
   Upload,
   Save,
-  Eye
+  Eye,
+  User,
+  Building
 } from 'lucide-react';
+import UserProfile from './UserProfile';
+import OrganizationSettings from './OrganizationSettings';
 
 const Settings = () => {
   const [brandingSettings, setBrandingSettings] = useState({
@@ -55,6 +58,26 @@ const Settings = () => {
     }
   };
 
+  const handleSaveProfile = () => {
+    alert('Profile saved successfully!');
+  };
+
+  const handleSaveOrganization = () => {
+    alert('Organization settings saved successfully!');
+  };
+
+  const handleSaveBranding = () => {
+    alert('Branding settings saved successfully!');
+  };
+
+  const handleSaveEmail = () => {
+    alert('Email settings saved successfully!');
+  };
+
+  const handleSaveIntegrations = () => {
+    alert('Integration settings saved successfully!');
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -62,15 +85,19 @@ const Settings = () => {
         <p className="text-slate-600 mt-2">Configure your platform settings and preferences</p>
       </div>
 
-      <Tabs defaultValue="branding" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+      <Tabs defaultValue="profile" className="w-full">
+        <TabsList className="grid w-full grid-cols-6">
+          <TabsTrigger value="profile" className="flex items-center gap-2">
+            <User className="h-4 w-4" />
+            Profile
+          </TabsTrigger>
+          <TabsTrigger value="organization" className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            Organization
+          </TabsTrigger>
           <TabsTrigger value="branding" className="flex items-center gap-2">
             <Palette className="h-4 w-4" />
             Branding
-          </TabsTrigger>
-          <TabsTrigger value="team" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
-            Team
           </TabsTrigger>
           <TabsTrigger value="email" className="flex items-center gap-2">
             <Mail className="h-4 w-4" />
@@ -85,6 +112,14 @@ const Settings = () => {
             Security
           </TabsTrigger>
         </TabsList>
+
+        <TabsContent value="profile">
+          <UserProfile onSave={handleSaveProfile} />
+        </TabsContent>
+
+        <TabsContent value="organization">
+          <OrganizationSettings onSave={handleSaveOrganization} />
+        </TabsContent>
 
         <TabsContent value="branding" className="space-y-6">
           <Card>
@@ -180,7 +215,7 @@ const Settings = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button>
+                <Button onClick={handleSaveBranding}>
                   <Save className="h-4 w-4 mr-2" />
                   Save Changes
                 </Button>
@@ -188,50 +223,6 @@ const Settings = () => {
                   <Eye className="h-4 w-4 mr-2" />
                   Preview Portal
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="team" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Team Members</CardTitle>
-                <Button>
-                  <Users className="h-4 w-4 mr-2" />
-                  Invite Member
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-                          <span className="font-medium text-primary">{member.name.split(' ').map(n => n[0]).join('')}</span>
-                        </div>
-                        <div>
-                          <h3 className="font-medium">{member.name}</h3>
-                          <p className="text-sm text-gray-600">{member.email}</p>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge variant={member.role === 'admin' ? 'default' : 'secondary'}>
-                        {member.role}
-                      </Badge>
-                      <Badge variant={member.status === 'active' ? 'default' : 'secondary'}>
-                        {member.status}
-                      </Badge>
-                      <Button size="sm" variant="outline">
-                        Edit
-                      </Button>
-                    </div>
-                  </div>
-                ))}
               </div>
             </CardContent>
           </Card>
@@ -298,7 +289,7 @@ const Settings = () => {
                 </div>
               </div>
 
-              <Button>
+              <Button onClick={handleSaveEmail}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Email Settings
               </Button>
@@ -367,7 +358,7 @@ const Settings = () => {
                 </div>
               </div>
 
-              <Button>
+              <Button onClick={handleSaveIntegrations}>
                 <Save className="h-4 w-4 mr-2" />
                 Save Integration Settings
               </Button>

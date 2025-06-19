@@ -2,382 +2,411 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  AlertTriangle, 
   Shield, 
-  Search, 
-  Filter, 
-  Eye, 
-  FileCheck,
+  AlertTriangle, 
+  CheckCircle, 
+  FileText, 
+  Download,
+  Eye,
   Clock,
-  XCircle,
-  CheckCircle,
+  Users,
+  TrendingUp,
   AlertCircle
 } from 'lucide-react';
 
+interface ComplianceItem {
+  id: string;
+  client: string;
+  type: 'kyc' | 'aml' | 'sanctions' | 'pep';
+  status: 'pending' | 'in_review' | 'approved' | 'rejected' | 'expired';
+  riskLevel: 'low' | 'medium' | 'high';
+  dueDate: string;
+  completedDate?: string;
+  assignedTo: string;
+  documents: number;
+  notes: string;
+}
+
+interface AuditLog {
+  id: string;
+  timestamp: string;
+  user: string;
+  action: string;
+  client: string;
+  details: string;
+}
+
 const ComplianceCenter = () => {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  // Mock data for risk assessments
-  const riskAlerts = [
-    {
-      id: '1',
-      client: 'Innovation Labs',
-      contact: 'Emily Davis',
-      risk_level: 'high',
-      alert_type: 'sanctions_hit',
-      description: 'Potential sanctions match detected',
-      status: 'requires_review',
-      created_at: '2024-01-22T10:00:00Z'
-    },
-    {
-      id: '2',
-      client: 'Global Tech Solutions',
-      contact: 'Robert Kim',
-      risk_level: 'medium',
-      alert_type: 'high_risk_country',
-      description: 'Client registered in high-risk jurisdiction',
-      status: 'under_review',
-      created_at: '2024-01-21T15:30:00Z'
-    },
-    {
-      id: '3',
-      client: 'Crypto Innovations',
-      contact: 'Lisa Zhang',
-      risk_level: 'high',
-      alert_type: 'pep_match',
-      description: 'Politically Exposed Person detected',
-      status: 'escalated',
-      created_at: '2024-01-20T09:15:00Z'
-    }
-  ];
-
-  const verifications = [
+  const [complianceItems] = useState<ComplianceItem[]>([
     {
       id: '1',
       client: 'Acme Corporation',
-      type: 'identity',
-      status: 'verified',
-      provider: 'stripe_identity',
-      completed_at: '2024-01-20T14:30:00Z'
+      type: 'kyc',
+      status: 'in_review',
+      riskLevel: 'low',
+      dueDate: '2024-02-15',
+      assignedTo: 'Sarah Johnson',
+      documents: 8,
+      notes: 'Standard KYC review in progress'
     },
     {
       id: '2',
       client: 'TechStart Inc',
-      type: 'address',
+      type: 'aml',
       status: 'pending',
-      provider: 'manual',
-      completed_at: null
+      riskLevel: 'medium',
+      dueDate: '2024-02-10',
+      assignedTo: 'Mike Chen',
+      documents: 12,
+      notes: 'Additional AML screening required'
     },
     {
       id: '3',
       client: 'Global Solutions',
       type: 'sanctions',
-      status: 'cleared',
-      provider: 'opensanctions',
-      completed_at: '2024-01-19T11:20:00Z'
+      status: 'approved',
+      riskLevel: 'low',
+      dueDate: '2024-01-30',
+      completedDate: '2024-01-28',
+      assignedTo: 'Emily Davis',
+      documents: 6,
+      notes: 'Sanctions screening completed successfully'
+    },
+    {
+      id: '4',
+      client: 'Innovation Labs',
+      type: 'pep',
+      status: 'rejected',
+      riskLevel: 'high',
+      dueDate: '2024-01-25',
+      completedDate: '2024-01-26',
+      assignedTo: 'John Smith',
+      documents: 15,
+      notes: 'PEP match found - requires enhanced due diligence'
     }
-  ];
+  ]);
 
-  const getRiskBadgeColor = (risk: string) => {
+  const [auditLogs] = useState<AuditLog[]>([
+    {
+      id: '1',
+      timestamp: '2024-01-26T14:30:00Z',
+      user: 'John Smith',
+      action: 'Status Changed',
+      client: 'Innovation Labs',
+      details: 'Changed status from "in_review" to "rejected" - PEP match found'
+    },
+    {
+      id: '2',
+      timestamp: '2024-01-26T10:15:00Z',
+      user: 'Emily Davis',
+      action: 'Document Uploaded',
+      client: 'Global Solutions',
+      details: 'Uploaded sanctions screening report'
+    },
+    {
+      id: '3',
+      timestamp: '2024-01-25T16:45:00Z',
+      user: 'Sarah Johnson',
+      action: 'Review Started',
+      client: 'Acme Corporation',
+      details: 'Began KYC review process'
+    },
+    {
+      id: '4',
+      timestamp: '2024-01-25T09:20:00Z',
+      user: 'Mike Chen',
+      action: 'Assignment Changed',
+      client: 'TechStart Inc',
+      details: 'Assigned AML review to Mike Chen'
+    }
+  ]);
+
+  const getStatusColor = (status: ComplianceItem['status']) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'in_review': return 'bg-blue-100 text-blue-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'expired': return 'bg-gray-100 text-gray-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getRiskColor = (risk: ComplianceItem['riskLevel']) => {
     switch (risk) {
-      case 'low': return 'bg-green-100 text-green-800 border-green-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'high': return 'bg-red-100 text-red-800 border-red-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'low': return 'bg-green-100 text-green-800';
+      case 'medium': return 'bg-yellow-100 text-yellow-800';
+      case 'high': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusIcon = (status: ComplianceItem['status']) => {
     switch (status) {
-      case 'verified':
-      case 'cleared':
-        return <CheckCircle className="h-4 w-4 text-green-600" />;
-      case 'pending':
-      case 'under_review':
-        return <Clock className="h-4 w-4 text-yellow-600" />;
-      case 'requires_review':
-      case 'escalated':
-        return <AlertCircle className="h-4 w-4 text-red-600" />;
-      case 'failed':
-        return <XCircle className="h-4 w-4 text-red-600" />;
-      default:
-        return <Clock className="h-4 w-4 text-gray-600" />;
+      case 'approved': return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case 'rejected': return <AlertCircle className="h-4 w-4 text-red-600" />;
+      case 'in_review': return <Clock className="h-4 w-4 text-blue-600" />;
+      case 'pending': return <AlertTriangle className="h-4 w-4 text-yellow-600" />;
+      case 'expired': return <AlertTriangle className="h-4 w-4 text-gray-600" />;
+      default: return <Clock className="h-4 w-4 text-gray-600" />;
     }
   };
 
-  const getStatusBadgeColor = (status: string) => {
-    switch (status) {
-      case 'verified':
-      case 'cleared':
-        return 'bg-green-100 text-green-800 border-green-200';
-      case 'pending':
-      case 'under_review':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'requires_review':
-      case 'escalated':
-        return 'bg-red-100 text-red-800 border-red-200';
-      case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
-      default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
-    }
+  const complianceStats = {
+    totalItems: complianceItems.length,
+    pending: complianceItems.filter(item => item.status === 'pending').length,
+    inReview: complianceItems.filter(item => item.status === 'in_review').length,
+    approved: complianceItems.filter(item => item.status === 'approved').length,
+    rejected: complianceItems.filter(item => item.status === 'rejected').length,
+    highRisk: complianceItems.filter(item => item.riskLevel === 'high').length,
+    overdue: complianceItems.filter(item => 
+      item.status !== 'approved' && new Date(item.dueDate) < new Date()
+    ).length
   };
 
-  const riskStats = {
-    totalAssessments: 156,
-    highRisk: 12,
-    mediumRisk: 34,
-    lowRisk: 110,
-    pendingReviews: 8
-  };
+  const complianceRate = Math.round((complianceStats.approved / complianceStats.totalItems) * 100);
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Risk & Compliance Center</h1>
-        <p className="text-slate-600 mt-2">Monitor and manage client risk assessments and compliance checks</p>
+        <h1 className="text-3xl font-bold text-slate-900">Compliance Center</h1>
+        <p className="text-slate-600 mt-2">Monitor compliance status and manage risk assessments</p>
       </div>
 
-      {/* Risk Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">Total Assessments</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Reviews</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{riskStats.totalAssessments}</div>
+            <div className="text-2xl font-bold">{complianceStats.totalItems}</div>
+            <p className="text-xs text-muted-foreground">Active compliance items</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-red-600">High Risk</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pending Review</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">{riskStats.highRisk}</div>
+            <div className="text-2xl font-bold text-yellow-600">{complianceStats.pending}</div>
+            <p className="text-xs text-muted-foreground">Awaiting review</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-yellow-600">Medium Risk</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">High Risk</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-yellow-600">{riskStats.mediumRisk}</div>
+            <div className="text-2xl font-bold text-red-600">{complianceStats.highRisk}</div>
+            <p className="text-xs text-muted-foreground">Require attention</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-green-600">Low Risk</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Compliance Rate</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">{riskStats.lowRisk}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-orange-600">Pending Reviews</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{riskStats.pendingReviews}</div>
+            <div className="text-2xl font-bold text-green-600">{complianceRate}%</div>
+            <p className="text-xs text-muted-foreground">Approval rate</p>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="alerts" className="w-full">
-        <TabsList>
-          <TabsTrigger value="alerts">Risk Alerts</TabsTrigger>
-          <TabsTrigger value="verifications">Verifications</TabsTrigger>
-          <TabsTrigger value="sanctions">Sanctions Screening</TabsTrigger>
+      <Tabs defaultValue="reviews" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="reviews">Compliance Reviews</TabsTrigger>
+          <TabsTrigger value="reports">Reports & Analytics</TabsTrigger>
+          <TabsTrigger value="audit">Audit Trail</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="alerts" className="space-y-4">
+        <TabsContent value="reviews" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Active Compliance Reviews</h3>
+            <div className="flex gap-2">
+              <Button variant="outline">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+              <Button>
+                <FileText className="h-4 w-4 mr-2" />
+                New Review
+              </Button>
+            </div>
+          </div>
+
+          <div className="grid gap-4">
+            {complianceItems.map((item) => (
+              <Card key={item.id} className="hover:shadow-md transition-shadow">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        {getStatusIcon(item.status)}
+                        <h3 className="font-semibold text-slate-900">{item.client}</h3>
+                        <Badge className={getStatusColor(item.status)}>
+                          {item.status.replace('_', ' ')}
+                        </Badge>
+                        <Badge className={getRiskColor(item.riskLevel)}>
+                          {item.riskLevel} risk
+                        </Badge>
+                        <Badge variant="outline">
+                          {item.type.toUpperCase()}
+                        </Badge>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-3">
+                        <div>
+                          <span className="text-slate-500">Assigned To</span>
+                          <p className="font-medium">{item.assignedTo}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Due Date</span>
+                          <p className="font-medium">{new Date(item.dueDate).toLocaleDateString()}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Documents</span>
+                          <p className="font-medium">{item.documents}</p>
+                        </div>
+                        <div>
+                          <span className="text-slate-500">Progress</span>
+                          <div className="flex items-center gap-2">
+                            <Progress value={item.status === 'approved' ? 100 : item.status === 'in_review' ? 60 : 30} className="flex-1" />
+                            <span className="text-xs">{item.status === 'approved' ? 100 : item.status === 'in_review' ? 60 : 30}%</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-slate-600">{item.notes}</p>
+                    </div>
+
+                    <div className="flex flex-col gap-2 ml-6">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-2" />
+                        Review
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <FileText className="h-4 w-4 mr-2" />
+                        Documents
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="reports" className="space-y-6">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-red-500" />
-                  Risk Alerts Requiring Attention
-                </CardTitle>
-                <div className="flex gap-2">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                    <Input
-                      placeholder="Search alerts..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 w-64"
-                    />
-                  </div>
-                  <Button variant="outline">
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter
-                  </Button>
-                </div>
-              </div>
+              <CardTitle>Compliance Analytics</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {riskAlerts.map((alert) => (
-                  <div key={alert.id} className="border rounded-lg p-4 bg-red-50/50">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-slate-900">{alert.client}</h3>
-                          <Badge className={getRiskBadgeColor(alert.risk_level)}>
-                            {alert.risk_level} risk
-                          </Badge>
-                          <Badge className={getStatusBadgeColor(alert.status)}>
-                            {alert.status.replace('_', ' ')}
-                          </Badge>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                          <div>
-                            <p className="text-sm text-slate-600">Contact: {alert.contact}</p>
-                            <p className="text-sm text-slate-600">Alert Type: {alert.alert_type.replace('_', ' ')}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-600">Created: {new Date(alert.created_at).toLocaleDateString()}</p>
-                          </div>
-                        </div>
-                        <p className="text-sm text-slate-700 font-medium">{alert.description}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Status Distribution</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Approved</span>
+                      <div className="flex items-center gap-2">
+                        <Progress value={(complianceStats.approved / complianceStats.totalItems) * 100} className="w-20" />
+                        <span className="text-sm font-medium">{complianceStats.approved}</span>
                       </div>
-                      <div className="flex flex-col gap-2 ml-6">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4 mr-2" />
-                          Review
-                        </Button>
-                        <Button size="sm">
-                          <FileCheck className="h-4 w-4 mr-2" />
-                          Resolve
-                        </Button>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">In Review</span>
+                      <div className="flex items-center gap-2">
+                        <Progress value={(complianceStats.inReview / complianceStats.totalItems) * 100} className="w-20" />
+                        <span className="text-sm font-medium">{complianceStats.inReview}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Pending</span>
+                      <div className="flex items-center gap-2">
+                        <Progress value={(complianceStats.pending / complianceStats.totalItems) * 100} className="w-20" />
+                        <span className="text-sm font-medium">{complianceStats.pending}</span>
+                      </div>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm">Rejected</span>
+                      <div className="flex items-center gap-2">
+                        <Progress value={(complianceStats.rejected / complianceStats.totalItems) * 100} className="w-20" />
+                        <span className="text-sm font-medium">{complianceStats.rejected}</span>
                       </div>
                     </div>
                   </div>
-                ))}
+                </div>
+
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Risk Analysis</h4>
+                  <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="text-2xl font-bold text-green-600">
+                        {complianceItems.filter(item => item.riskLevel === 'low').length}
+                      </div>
+                      <div className="text-sm text-green-700">Low Risk</div>
+                    </div>
+                    <div className="p-4 bg-yellow-50 rounded-lg">
+                      <div className="text-2xl font-bold text-yellow-600">
+                        {complianceItems.filter(item => item.riskLevel === 'medium').length}
+                      </div>
+                      <div className="text-sm text-yellow-700">Medium Risk</div>
+                    </div>
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <div className="text-2xl font-bold text-red-600">
+                        {complianceItems.filter(item => item.riskLevel === 'high').length}
+                      </div>
+                      <div className="text-sm text-red-700">High Risk</div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        <TabsContent value="verifications" className="space-y-4">
+        <TabsContent value="audit" className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-semibold">Audit Trail</h3>
+            <Button variant="outline">
+              <Download className="h-4 w-4 mr-2" />
+              Export Logs
+            </Button>
+          </div>
+
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-blue-500" />
-                Identity & Document Verifications
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
               <div className="space-y-4">
-                {verifications.map((verification) => (
-                  <div key={verification.id} className="border rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="font-semibold text-slate-900">{verification.client}</h3>
-                          <Badge variant="outline">
-                            {verification.type}
-                          </Badge>
-                          <div className="flex items-center gap-1">
-                            {getStatusIcon(verification.status)}
-                            <Badge className={getStatusBadgeColor(verification.status)}>
-                              {verification.status}
-                            </Badge>
-                          </div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-sm text-slate-600">Provider: {verification.provider}</p>
-                          </div>
-                          <div>
-                            <p className="text-sm text-slate-600">
-                              {verification.completed_at 
-                                ? `Completed: ${new Date(verification.completed_at).toLocaleDateString()}`
-                                : 'In progress'
-                              }
-                            </p>
-                          </div>
-                        </div>
+                {auditLogs.map((log) => (
+                  <div key={log.id} className="flex items-start gap-4 p-4 border rounded-lg">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">{log.user}</span>
+                        <span className="text-sm text-slate-500">•</span>
+                        <span className="text-sm font-medium text-blue-600">{log.action}</span>
+                        <span className="text-sm text-slate-500">•</span>
+                        <span className="text-sm text-slate-500">{log.client}</span>
                       </div>
-                      <div className="flex gap-2 ml-6">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
-                      </div>
+                      <p className="text-sm text-slate-600">{log.details}</p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </p>
                     </div>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sanctions" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5 text-purple-500" />
-                Sanctions & PEP Screening
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="border rounded-lg p-4 bg-blue-50/50">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-slate-900">Database Status</h3>
-                    <Badge className="bg-green-100 text-green-800">Up to date</Badge>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                    <div>
-                      <p className="text-slate-600">Last Updated</p>
-                      <p className="font-medium">2024-01-22 06:00 UTC</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-600">Records Count</p>
-                      <p className="font-medium">1,247,832</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-600">Data Source</p>
-                      <p className="font-medium">OpenSanctions (MIT)</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="border rounded-lg p-4">
-                  <h3 className="font-semibold text-slate-900 mb-4">Recent Screening Results</h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-green-50 rounded">
-                      <div>
-                        <p className="font-medium">Acme Corporation - John Smith</p>
-                        <p className="text-sm text-slate-600">No matches found</p>
-                      </div>
-                      <Badge className="bg-green-100 text-green-800">Clear</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-red-50 rounded">
-                      <div>
-                        <p className="font-medium">Innovation Labs - Emily Davis</p>
-                        <p className="text-sm text-slate-600">Potential PEP match detected</p>
-                      </div>
-                      <Badge className="bg-red-100 text-red-800">Hit</Badge>
-                    </div>
-                    <div className="flex items-center justify-between p-3 bg-yellow-50 rounded">
-                      <div>
-                        <p className="font-medium">Global Tech - Robert Kim</p>
-                        <p className="text-sm text-slate-600">Manual review required</p>
-                      </div>
-                      <Badge className="bg-yellow-100 text-yellow-800">Review</Badge>
-                    </div>
-                  </div>
-                </div>
               </div>
             </CardContent>
           </Card>

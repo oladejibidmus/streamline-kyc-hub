@@ -2,9 +2,6 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { 
   Plus, 
@@ -13,44 +10,34 @@ import {
   Copy, 
   Trash2, 
   Settings,
-  FileText,
-  MousePointer,
-  Calendar,
-  CheckSquare,
-  Type,
-  Mail,
-  Phone,
-  Hash
+  Save
 } from 'lucide-react';
-
-interface FormField {
-  id: string;
-  type: 'text' | 'email' | 'phone' | 'number' | 'textarea' | 'select' | 'checkbox' | 'date';
-  label: string;
-  placeholder?: string;
-  required: boolean;
-  options?: string[];
-}
+import { FormField, KYCForm } from '@/types/forms';
+import FormFieldPalette from './FormFieldPalette';
+import FormCanvas from './FormCanvas';
+import FormPropertiesPanel from './FormPropertiesPanel';
 
 const FormBuilder = () => {
-  const [forms, setForms] = useState([
+  const [forms, setForms] = useState<KYCForm[]>([
     {
       id: '1',
       name: 'Basic Client Information',
       description: 'Standard client onboarding form',
       status: 'active',
-      fields: 8,
+      fields: [],
       responses: 24,
-      created_at: '2024-01-15'
+      created_at: '2024-01-15',
+      updated_at: '2024-01-20'
     },
     {
       id: '2',
       name: 'Corporate KYC Form',
       description: 'Enhanced due diligence for corporate clients',
       status: 'draft',
-      fields: 15,
+      fields: [],
       responses: 0,
-      created_at: '2024-01-20'
+      created_at: '2024-01-20',
+      updated_at: '2024-01-20'
     }
   ]);
 
@@ -79,16 +66,8 @@ const FormBuilder = () => {
     }
   ]);
 
-  const fieldTypes = [
-    { type: 'text' as const, icon: Type, label: 'Text Input' },
-    { type: 'email' as const, icon: Mail, label: 'Email' },
-    { type: 'phone' as const, icon: Phone, label: 'Phone' },
-    { type: 'number' as const, icon: Hash, label: 'Number' },
-    { type: 'textarea' as const, icon: FileText, label: 'Long Text' },
-    { type: 'select' as const, icon: MousePointer, label: 'Dropdown' },
-    { type: 'checkbox' as const, icon: CheckSquare, label: 'Checkbox' },
-    { type: 'date' as const, icon: Calendar, label: 'Date' }
-  ];
+  const [formTitle, setFormTitle] = useState('Client Onboarding Form');
+  const [formDescription, setFormDescription] = useState('');
 
   const addField = (type: FormField['type']) => {
     const newField: FormField = {
@@ -110,6 +89,34 @@ const FormBuilder = () => {
     setFormFields(formFields.filter(field => field.id !== id));
   };
 
+  const saveForm = () => {
+    // Simulate saving the form
+    console.log('Saving form:', { formTitle, formDescription, formFields });
+    alert('Form saved successfully!');
+  };
+
+  const duplicateForm = (formId: string) => {
+    const formToDuplicate = forms.find(f => f.id === formId);
+    if (formToDuplicate) {
+      const newForm: KYCForm = {
+        ...formToDuplicate,
+        id: Date.now().toString(),
+        name: `${formToDuplicate.name} (Copy)`,
+        status: 'draft',
+        responses: 0,
+        created_at: new Date().toISOString().split('T')[0],
+        updated_at: new Date().toISOString().split('T')[0]
+      };
+      setForms([...forms, newForm]);
+    }
+  };
+
+  const deleteForm = (formId: string) => {
+    if (confirm('Are you sure you want to delete this form?')) {
+      setForms(forms.filter(f => f.id !== formId));
+    }
+  };
+
   if (selectedForm) {
     return (
       <div className="space-y-6">
@@ -126,138 +133,26 @@ const FormBuilder = () => {
               <Eye className="h-4 w-4 mr-2" />
               Preview
             </Button>
-            <Button>
-              <Settings className="h-4 w-4 mr-2" />
-              Publish
+            <Button onClick={saveForm}>
+              <Save className="h-4 w-4 mr-2" />
+              Save Form
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Field Palette */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-sm">Field Types</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {fieldTypes.map((fieldType) => {
-                  const Icon = fieldType.icon;
-                  return (
-                    <Button
-                      key={fieldType.type}
-                      variant="outline"
-                      size="sm"
-                      className="w-full justify-start"
-                      onClick={() => addField(fieldType.type)}
-                    >
-                      <Icon className="h-4 w-4 mr-2" />
-                      {fieldType.label}
-                    </Button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Form Canvas */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-sm">Form Preview</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 min-h-[400px]">
-                <div className="border-2 border-dashed border-slate-200 rounded-lg p-6">
-                  <h2 className="text-xl font-semibold mb-4">Client Onboarding Form</h2>
-                  <div className="space-y-4">
-                    {formFields.map((field) => (
-                      <div key={field.id} className="group relative">
-                        <div className="absolute -right-2 -top-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <div className="flex gap-1">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="h-6 w-6 p-0"
-                              onClick={() => removeField(field.id)}
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <Label className="text-sm font-medium">
-                          {field.label}
-                          {field.required && <span className="text-red-500 ml-1">*</span>}
-                        </Label>
-                        
-                        {field.type === 'textarea' ? (
-                          <Textarea placeholder={field.placeholder} className="mt-1" />
-                        ) : field.type === 'select' ? (
-                          <select className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
-                            <option>Select an option</option>
-                          </select>
-                        ) : field.type === 'checkbox' ? (
-                          <div className="flex items-center space-x-2 mt-1">
-                            <input type="checkbox" className="rounded" />
-                            <span className="text-sm">{field.placeholder || 'Checkbox option'}</span>
-                          </div>
-                        ) : (
-                          <Input 
-                            type={field.type} 
-                            placeholder={field.placeholder} 
-                            className="mt-1"
-                          />
-                        )}
-                      </div>
-                    ))}
-                    
-                    {formFields.length === 0 && (
-                      <div className="text-center py-12 text-slate-500">
-                        <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                        <p>Drag fields from the left panel to build your form</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Properties Panel */}
-          <Card className="lg:col-span-1">
-            <CardHeader>
-              <CardTitle className="text-sm">Form Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="form-title" className="text-sm">Form Title</Label>
-                  <Input id="form-title" defaultValue="Client Onboarding Form" />
-                </div>
-                <div>
-                  <Label htmlFor="form-desc" className="text-sm">Description</Label>
-                  <Textarea id="form-desc" placeholder="Form description..." />
-                </div>
-                <div className="pt-4 border-t">
-                  <h4 className="font-medium mb-2">Form Options</h4>
-                  <div className="space-y-2">
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" defaultChecked />
-                      <span className="text-sm">Auto-save progress</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" />
-                      <span className="text-sm">Require login</span>
-                    </label>
-                    <label className="flex items-center space-x-2">
-                      <input type="checkbox" defaultChecked />
-                      <span className="text-sm">Send confirmation email</span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <FormFieldPalette onAddField={addField} />
+          <FormCanvas 
+            fields={formFields}
+            onRemoveField={removeField}
+            onUpdateField={updateField}
+          />
+          <FormPropertiesPanel
+            formTitle={formTitle}
+            formDescription={formDescription}
+            onTitleChange={setFormTitle}
+            onDescriptionChange={setFormDescription}
+          />
         </div>
       </div>
     );
@@ -293,7 +188,7 @@ const FormBuilder = () => {
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <div>
                       <span className="text-slate-500">Fields</span>
-                      <p className="font-medium">{form.fields}</p>
+                      <p className="font-medium">{form.fields.length}</p>
                     </div>
                     <div>
                       <span className="text-slate-500">Responses</span>
@@ -319,9 +214,22 @@ const FormBuilder = () => {
                     <Eye className="h-4 w-4 mr-2" />
                     Preview
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => duplicateForm(form.id)}
+                  >
                     <Copy className="h-4 w-4 mr-2" />
                     Duplicate
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => deleteForm(form.id)}
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
                   </Button>
                 </div>
               </div>
